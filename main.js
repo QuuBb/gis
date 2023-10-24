@@ -18,6 +18,7 @@ const latEl = document.querySelector('.lat');
 const longEl = document.querySelector('.long');
 const btnSave = document.querySelector('.btn-save');
 const pointNameInput = document.querySelector('.nameInput');
+const popInfoEl = document.getElementById('popup-ifno');
 
 let latitude;
 let longitude;
@@ -25,6 +26,7 @@ let latTmp;
 let longTmp;
 let map;
 let view;
+let popover;
 const userPoints = [];
 const userRender = [];
 const overlay = new Overlay({
@@ -103,7 +105,7 @@ function SaveUserPoint() {
             anchor: [0.5, 1],
             anchorXUnits: 'fraction',
             anchorYUnits: 'fraction',
-            src: 'data/ebe.png',
+            src: 'data/img.png',
         }),
     });
 
@@ -124,7 +126,7 @@ function SaveUserPoint() {
 
 Init();
 
-map.on('singleclick', OnMapClick);
+map.on('click', OnMapClick);
 btnCenter.addEventListener('click', GetUserPosition);
 
 closer.addEventListener('click', function () {
@@ -134,3 +136,37 @@ closer.addEventListener('click', function () {
 });
 
 btnSave.addEventListener('click', SaveUserPoint);
+
+const popup = new Overlay({
+    element: popInfoEl,
+    positioning: 'bottom-center',
+    stopEvent: false,
+});
+map.addOverlay(popup);
+
+function disposePopover() {
+    if (popover) {
+        popover.dispose();
+        popover = undefined;
+    }
+}
+
+console.log(map);
+// display popup on click
+map.on('click', function (evt) {
+    const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+        return feature;
+    });
+    disposePopover();
+    if (!feature) {
+        return;
+    }
+    popup.setPosition(evt.coordinate);
+    console.log(feature);
+    popover = new bootstrap.Popover(popInfoEl, {
+        placement: 'top',
+        html: true,
+        content: feature.get('name'),
+    });
+    popover.show();
+});
