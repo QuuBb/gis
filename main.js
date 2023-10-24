@@ -6,7 +6,7 @@ import OSM from 'ol/source/OSM';
 import Overlay from 'ol/Overlay.js';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
-import {Point} from 'ol/geom';
+import {Point, Polygon} from 'ol/geom';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
 
@@ -83,6 +83,8 @@ function OnMapClick(event) {
     const coordinate = event.coordinate;
     latTmp = coordinate[0];
     longTmp = coordinate[1];
+    pointNameInput.value = '';
+    console.log(pointNameInput);
     latEl.innerHTML = `<p>X: ${coordinate[0].toPrecision(4)}</p>`;
     longEl.innerHTML = `<p>Y: ${coordinate[1].toPrecision(4)}</p>`;
     overlay.setPosition(coordinate);
@@ -92,36 +94,32 @@ function OnMapClick(event) {
 function SaveUserPoint() {
     const pointName = pointNameInput.value;
     const point = new Feature({
-        geometry: new Point(fromLonLat([latTmp, longTmp])),
+        geometry: new Point([latTmp, longTmp]),
+        name: pointName,
     });
 
-    point.setStyle(
-        new Style({
-            image: new Icon({
-                color: '#BADA55',
-                crossOrigin: 'anonymous',
-                src: 'data/square.svg',
-            }),
-        })
-    );
+    const iconStyle = new Style({
+        image: new Icon({
+            anchor: [0.5, 1],
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
+            src: 'data/ebe.png',
+        }),
+    });
 
-    userPoints.push({name: pointName, latitude: latTmp, longitude: longTmp, render: point});
-    userRender.push(point);
-
-    console.log(point);
+    point.setStyle(iconStyle);
 
     const vectorSource = new VectorSource({
-        features: userRender,
+        features: [point],
     });
 
     const vectorLayer = new VectorLayer({
         source: vectorSource,
     });
 
-    console.log(vectorLayer);
+    console.log(point);
 
     map.addLayer(vectorLayer);
-    console.log(map);
 }
 
 Init();
