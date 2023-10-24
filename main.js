@@ -144,29 +144,11 @@ const popup = new Overlay({
 });
 map.addOverlay(popup);
 
-function disposePopover() {
-    if (popover) {
-        popover.dispose();
-        popover = undefined;
-    }
-}
-
-console.log(map);
 // display popup on click
 map.on('click', function (evt) {
     const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
         return feature;
     });
-    disposePopover();
-    if (!feature) {
-        return;
-    }
-    popup.setPosition(evt.coordinate);
+
     console.log(feature);
-    popover = new bootstrap.Popover(popInfoEl, {
-        placement: 'top',
-        html: true,
-        content: feature.get('name'),
-    });
-    popover.show();
 });
