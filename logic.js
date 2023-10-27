@@ -15,6 +15,7 @@ import {add} from 'ol/coordinate';
 
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
+const btnCenter = document.getElementById('btnCenter');
 
 const defLat = 54.4;
 const defLong = 18.6;
@@ -44,6 +45,14 @@ class App {
 
         this.LoadPoints();
         this.RenderPoints();
+
+        this.map.on('click', () => {
+            popupInfo.classList.add('hidden');
+        });
+
+        btnCenter.addEventListener('click', () => {
+            this.CenterView();
+        });
     }
 
     LoadDefaultPoints() {
@@ -153,15 +162,37 @@ class App {
 
         this.map.addOverlay(overlay);
 
-        console.log('ebe');
-
         overlay.setPosition([point.longitude, point.latitude]);
 
-        popupInfo.getElementsByTagName('img')[0].src = point.photo;
-        popupInfo.getElementsByTagName('h4')[0].innerHTML = point.name;
-        popupInfo.getElementsByTagName('p')[2].innerHTML = point.description;
+        fetch(`https://geocode.maps.co/reverse?lat=${point.latitude}&lon=${point.longitude}`)
+            .then(response => response.json())
+            .then(data => {
+                popupInfo.getElementsByTagName('img')[0].src = point.photo;
+                popupInfo.getElementsByTagName('h4')[0].innerHTML = point.name;
+                popupInfo.getElementsByTagName('p')[2].innerHTML = point.description;
+
+                if (data.address.house_number !== undefined) {
+                    popupInfo.getElementsByTagName(
+                        'p'
+                    )[1].innerHTML = `ul. ${data.address.road} ${data.address.house_number}, ${data.address.city} ${data.address.postcode}`;
+                } else {
+                    popupInfo.getElementsByTagName('p')[1].innerHTML = `ul. ${data.address.road}, ${data.address.city} ${data.address.postcode}`;
+                }
+            });
 
         popupInfo.classList.remove('hidden');
+    }
+
+    CenterView() {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                this.view.setCenter([position.coords.longitude, position.coords.latitude]);
+                this.view.setZoom(18);
+            },
+            () => {
+                this.view.setCenter([defLong, defLat]);
+            }
+        );
     }
 }
 
