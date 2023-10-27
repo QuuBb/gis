@@ -12,6 +12,7 @@ import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import {fromLonLat} from 'ol/proj';
 import {add} from 'ol/coordinate';
+import {returnOrUpdate} from 'ol/extent';
 
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
@@ -52,6 +53,29 @@ class App {
 
         btnCenter.addEventListener('click', () => {
             this.CenterView();
+        });
+
+        this.map.on('pointermove', e => {
+            const pixel = this.map.getEventPixel(e.originalEvent);
+            const hit = this.map.hasFeatureAtPixel(pixel);
+            //this.map.getTarget().style.cursor = hit ? 'pointer' : '';
+        });
+
+        this.map.on('click', event => {
+            const feature = this.map.forEachFeatureAtPixel(event.pixel, feature => {
+                return feature;
+            });
+            if (!feature) {
+                return;
+            }
+            let point = this.points.filter(obj => {
+                return obj.name === feature.getProperties()['name'];
+            });
+
+            point = point[0];
+
+            this.ShowPointInfo(point);
+            this.SetViewToPoint(point);
         });
     }
 
@@ -126,7 +150,7 @@ class App {
 
             list.lastElementChild.addEventListener('click', () => {
                 this.ShowPointInfo(point);
-                this.SetViewToPoint(point.longitude, point.latitude);
+                this.SetViewToPoint(point);
             });
         });
     }
@@ -136,8 +160,8 @@ class App {
         this.RenderPointsToMap();
     }
 
-    SetViewToPoint(long, lat) {
-        const cords = [long, lat];
+    SetViewToPoint(point) {
+        const cords = [point.longitude, point.latitude];
         add(cords, [10, 15]);
         this.view.setCenter(cords);
         this.view.setZoom(18);
@@ -146,8 +170,7 @@ class App {
     ShowPointInfo(point) {
         const x = this.map.getOverlays().getArray()[0];
         if (x !== undefined) this.map.removeOverlay(x);
-        console.log(this.map);
-        console.log(x);
+
         this.map.removeOverlay(0);
         const overlay = new Overlay({
             element: popupInfo,
@@ -197,4 +220,3 @@ class App {
 }
 
 const app = new App();
-console.log(app);
