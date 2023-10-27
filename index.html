@@ -4,32 +4,63 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/x-icon" href="https://openlayers.org/favicon.ico" />
+  <link rel="stylesheet" href="./style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Using OpenLayers with Vite</title>
 </head>
 
 <body>
-  <div class="main">
-    <div id="map"></div>
-    <div id="popup" class="ol-popup">
-      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-      <form action="">
-        <label for="name">Nazwa punktu</label>
-        <input type="text" name="name" id="name" class="nameInput">
-        <p class="lat"></p>
-        <p class="long"></p>
-      </form>
-      <button class='btn btn-save'>Zapisz punkt</button>
-      <div id="popup-content"></div>
-      <div id="popup-info"></div>
+  <div class="main flex flex-row w-screen h-screen">
+    <div class="max-w-sm h-full bg-lime-900 p-0 flex flex-col">
+      <ul class="bg-gray-200 m-5 rounded-md flex flex-col h-5/6 overflow-scroll">
+      </ul>
+      <div class="w-full flex flex-col justify-around items-center h-1/6">
+        <button class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyśrodkuj</button>
+        <button class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Dodaj punkt</button>
+        <button class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyznacz trasę </button>
+      </div>
+
     </div>
-    <div>
-      <button class="btn btn-center">Center</button>
-      <button class="btn btn-point">Add point</button>
-      <button class="btn btn-path">Create path</button>
-    </div>
+    <div id="map" class="w-full h-full"></div>
   </div>
-  <script type="module" src="./main.js"></script>
+  <script type="module" src="./logic.js"></script>
 </body>
 
 </html>
+<!-- Popup info
+<div class="bg-red-50 opacity-95 w-fit rounded-md max-w-md p-10 flex flex-col gap-3">
+  <img src="/data/ebe.png" alt="" class="w-full">
+  <h4 class="text-3xl">Muzeum</h4>
+  <div class="flex">
+    <p>Adres:</p>
+    <p class="ml-auto">Gdańsk 81-554, ul. Zwycięstwa 45</p>
+  </div>
+  <div class="flex">
+    <p>Godziny otwarcia</p>
+    <p class="ml-auto">9:00 - 18:00</p>
+  </div>
+  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae dolorum facere commodi, repellat iste
+    eaque minus omnis adipisci, quas expedita exercitationem aut obcaecati molestiae impedit quis deleniti magnam
+    temporibus minima.</p>
+  </div> -->
+
+<!-- Popup save
+  <div class="bg-red-100 w-64 p-8">
+    <form action="" class="m-auto flex gap-5 flex-col items-center justify-center w-min">
+      <div class="flex flex-col justify-between">
+        <input type="text" autocomplete="off" placeholder="Nazwa" name="name" id="name" required>
+      </div>
+      <div class="flex gap-2 w-fit">
+        <div class="flex justify-between">
+          <input class="w-full" placeholder="Długość" type="number" name="long" id="long" required>
+        </div>
+        <div class="flex justify-between">
+          <input class="w-full" placeholder="Szerokość" type="number" name="lat" id="lat" required>
+        </div>
+      </div>
+      <div class="flex flex-col justify-between">
+        <input type="text" autocomplete="off" name="description" placeholder="Opis" id="description">
+      </div>
+      <button class="bg-gray-50 px-2 text-lg">Zapisz</button>
+    </form>
+  </div> -->
