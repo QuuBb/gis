@@ -126,29 +126,4 @@ function SaveUserPoint() {
 
 Init();
 
-map.on('click', OnMapClick);
-btnCenter.addEventListener('click', GetUserPosition);
-
-closer.addEventListener('click', function () {
-    overlay.setPosition(undefined);
-    closer.blur();
-    return false;
-});
-
-btnSave.addEventListener('click', SaveUserPoint);
-
-const popup = new Overlay({
-    element: popInfoEl,
-    positioning: 'bottom-center',
-    stopEvent: false,
-});
-map.addOverlay(popup);
-
-// display popup on click
-map.on('click', function (evt) {
-    const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
-        return feature;
-    });
-
-    console.log(feature);
-});
+// s
