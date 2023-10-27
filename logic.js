@@ -14,6 +14,7 @@ import {fromLonLat} from 'ol/proj';
 import {add} from 'ol/coordinate';
 import {returnOrUpdate} from 'ol/extent';
 
+
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
 const btnCenter = document.getElementById('btnCenter');
@@ -161,10 +162,12 @@ class App {
     }
 
     SetViewToPoint(point) {
-        const cords = [point.longitude, point.latitude];
-        add(cords, [10, 15]);
-        this.view.setCenter(cords);
-        this.view.setZoom(18);
+        const newLatitude = point.latitude - (-0.0013);
+        const newLongitude = point.longitude - (0.001);
+        const cords = [newLongitude, newLatitude];
+        
+        this.view.setCenter(cords); 
+        this.view.setZoom(18); 
     }
 
     ShowPointInfo(point) {
