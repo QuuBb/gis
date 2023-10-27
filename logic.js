@@ -94,19 +94,21 @@ class App {
     }
 
     RenderPointToList() {
-        this.points.forEach(point => {
+        this.points.forEach((point, i) => {
             console.log('ebe');
             list.insertAdjacentHTML(
                 'beforeend',
-                `<li class="border-b-2 border-black max-h-80 flex items-center">
+                `<li data=${i} class="border-b-2 border-black 80 flex items-center">
                     <div class="w-full flex items-center p-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-8 h-8">
+                    <div class="w-8 h-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-8 h-8 min-w-[32 rem]">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round"
                         d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                    </svg>
-                    <h3 class="ml-3 text-xl">${point.name}</h3>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl">${point.name}</h3>
                     </div>
                 </li>`
             );
