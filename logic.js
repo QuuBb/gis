@@ -14,10 +14,12 @@ import {fromLonLat} from 'ol/proj';
 import {add} from 'ol/coordinate';
 import {returnOrUpdate} from 'ol/extent';
 
-
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
 const btnCenter = document.getElementById('btnCenter');
+const btnNewPoint = document.getElementById('btnNewPoint');
+const btnSavePoint = document.getElementById('btnSavePoint');
+const popupSave = document.getElementById('popupSave');
 
 const defLat = 54.4;
 const defLong = 18.6;
@@ -48,18 +50,17 @@ class App {
         this.LoadPoints();
         this.RenderPoints();
 
-        this.map.on('click', () => {
-            popupInfo.classList.add('hidden');
-        });
-
         btnCenter.addEventListener('click', () => {
             this.CenterView();
         });
 
-        this.map.on('pointermove', e => {
-            const pixel = this.map.getEventPixel(e.originalEvent);
-            const hit = this.map.hasFeatureAtPixel(pixel);
-            //this.map.getTarget().style.cursor = hit ? 'pointer' : '';
+        btnNewPoint.addEventListener('click', () => {
+            this.AddNewPoint();
+        });
+
+        btnSavePoint.addEventListener('click', e => {
+            e.preventDefault();
+            this.SaveNewPoint();
         });
 
         this.map.on('click', event => {
@@ -67,16 +68,23 @@ class App {
                 return feature;
             });
             if (!feature) {
+                popupInfo.classList.add('hidden');
+                popupSave.classList.add('hidden');
                 return;
+            } else {
+                let point = this.points.filter(obj => {
+                    return obj.name === feature.getProperties()['name'];
+                });
+
+                point = point[0];
+
+                this.ShowPointInfo(point);
+                this.SetViewToPoint(point);
             }
-            let point = this.points.filter(obj => {
-                return obj.name === feature.getProperties()['name'];
-            });
+        });
 
-            point = point[0];
-
-            this.ShowPointInfo(point);
-            this.SetViewToPoint(point);
+        this.map.on('dblclick', event => {
+            this.AddNewPoint(event);
         });
     }
 
@@ -87,9 +95,8 @@ class App {
     LoadSavedPoints() {
         if (localStorage.length == 0) return;
         for (let i = 0; i < localStorage.length; i++) {
-            this.points.push(localStorage.getItem(localStorage.key(i)));
+            this.points.push(JSON.parse(localStorage.getItem(localStorage.key(i))));
         }
-        localStorage.clear();
     }
 
     LoadPoints() {
@@ -98,6 +105,7 @@ class App {
     }
 
     RenderPointsToMap() {
+        this.map.removeLayer(this.map.getLayers().array_[1]);
         this.points.forEach(point => {
             let pointRender = new Feature({
                 geometry: new Point([point.longitude, point.latitude]),
@@ -131,6 +139,7 @@ class App {
     }
 
     RenderPointToList() {
+        list.innerHTML = '';
         this.points.forEach((point, i) => {
             list.insertAdjacentHTML(
                 'beforeend',
@@ -162,12 +171,12 @@ class App {
     }
 
     SetViewToPoint(point) {
-        const newLatitude = point.latitude - (-0.0013);
-        const newLongitude = point.longitude - (0.001);
+        const newLatitude = point.latitude - -0.0013;
+        const newLongitude = point.longitude - 0.001;
         const cords = [newLongitude, newLatitude];
-        
-        this.view.setCenter(cords); 
-        this.view.setZoom(18); 
+
+        this.view.setCenter(cords);
+        this.view.setZoom(18);
     }
 
     ShowPointInfo(point) {
@@ -219,6 +228,58 @@ class App {
                 this.view.setCenter([defLong, defLat]);
             }
         );
+    }
+
+    AddNewPoint(event = null) {
+        document.getElementById('long').value = '';
+        document.getElementById('lat').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('description').value = '';
+        const addPointOverlay = new Overlay({
+            element: popupSave,
+            autoPan: {
+                animation: {
+                    duration: 250,
+                },
+            },
+            positioning: 'bottom-center',
+        });
+
+        this.map.addOverlay(addPointOverlay);
+
+        if (event !== null) {
+            addPointOverlay.setPosition(event.coordinate);
+            document.getElementById('long').value = Math.round(Number(event.coordinate[0]) * 100) / 100;
+            document.getElementById('lat').value = Math.round(event.coordinate[1] * 100) / 100;
+        } else {
+            addPointOverlay.setPosition(this.view.getCenter());
+        }
+        popupSave.classList.remove('hidden');
+    }
+
+    SaveNewPoint() {
+        const name = document.getElementById('name').value;
+        const description = document.getElementById('description').value;
+        const longitude = document.getElementById('long').value;
+        const latitude = document.getElementById('lat').value;
+        const photo = document.getElementById('photo').value;
+
+        if (name === '' || description === '' || longitude === '' || latitude === '') {
+            btnSavePoint.classList.remove('bg-gray-50');
+            btnSavePoint.classList.add('bg-red-800');
+            btnSavePoint.disabled = true;
+            setTimeout(() => {
+                btnSavePoint.disabled = false;
+                btnSavePoint.classList.add('bg-gray-50');
+                btnSavePoint.classList.remove('bg-red-800');
+            }, 2000);
+        } else {
+            const newPoint = {name: name, longitude: longitude, latitude: latitude, description: description, photo: photo};
+            this.points.push(newPoint);
+            popupSave.classList.add('hidden');
+            this.RenderPoints();
+            localStorage.setItem(`point${localStorage.length}`, JSON.stringify(newPoint));
+        }
     }
 }
 

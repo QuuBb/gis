@@ -29,7 +29,7 @@
       </ul>
       <div class="w-full flex flex-col justify-around items-center h-1/6">
         <button id="btnCenter" class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyśrodkuj</buton>
-          <button class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Dodaj punkt</button>
+          <button id="btnNewPoint" class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Dodaj punkt</button>
           <button class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyznacz trasę </button>
       </div>
     </div>
@@ -39,6 +39,7 @@
 </body>
 
 </html>
+
 <!-- Popup info -->
 <div id="popupInfo" class="bg-red-50 w-fit rounded-md max-w-md p-10 flex flex-col gap-3 hidden">
   <img src="/data/ebe.png" alt="" class="w-full">
@@ -53,23 +54,26 @@
     temporibus minima.</p>
 </div>
 
-<!-- Popup save
-  <div class="bg-red-100 w-64 p-8">
-    <form action="" class="m-auto flex gap-5 flex-col items-center justify-center w-min">
-      <div class="flex flex-col justify-between">
-        <input type="text" autocomplete="off" placeholder="Nazwa" name="name" id="name" required>
+<!-- Popup save -->
+<div id="popupSave" class="bg-red-100 w-64 p-8 hidden">
+  <form action="" class="m-auto flex gap-5 flex-col items-center justify-center w-min">
+    <div class="flex flex-col justify-between">
+      <input type="text" autocomplete="off" placeholder="Nazwa" name="name" id="name" required>
+    </div>
+    <div class="flex gap-2 w-fit">
+      <div class="flex justify-between">
+        <input class="w-full" placeholder="Długość" type="number" step="0.01" name="long" id="long" required>
       </div>
-      <div class="flex gap-2 w-fit">
-        <div class="flex justify-between">
-          <input class="w-full" placeholder="Długość" type="number" name="long" id="long" required>
-        </div>
-        <div class="flex justify-between">
-          <input class="w-full" placeholder="Szerokość" type="number" name="lat" id="lat" required>
-        </div>
+      <div class="flex justify-between">
+        <input class="w-full" placeholder="Szerokość" type="number" step="0.01" name="lat" id="lat" required>
       </div>
-      <div class="flex flex-col justify-between">
-        <input type="text" autocomplete="off" name="description" placeholder="Opis" id="description">
-      </div>
-      <button class="bg-gray-50 px-2 text-lg">Zapisz</button>
-    </form>
-  </div> -->
+    </div>
+    <div class="flex flex-col justify-between">
+      <input type="text" autocomplete="off" name="description" placeholder="Opis" id="description">
+    </div>
+    <div class="flex flex-col justify-between">
+      <input type="text" autocomplete="off" name="photo" placeholder="Url zdjęcia" id="photo">
+    </div>
+    <button id="btnSavePoint" class="bg-gray-50 px-2 text-lg">Zapisz</button>
+  </form>
+</div>
