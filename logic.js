@@ -18,6 +18,7 @@ import {add} from 'ol/coordinate';
 import {returnOrUpdate} from 'ol/extent';
 
 const apiKey = 'AAPK10d71740470841baaed42884615b1ee18aFFNVd1aKd1B0LoIAGYeNcz4kHplJ-pTki3jwJtXugj8JnUKnI3eDglN0aIV1ij';
+const authentication = arcgisRest.ApiKeyManager.fromKey(apiKey);
 
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
@@ -381,6 +382,14 @@ class App {
             } else if (this.endPoint === null) {
                 this.endPoint = new Point(e.coordinate);
 
+                arcgisRest
+                    .solveRoute({
+                        stops: [this.startPoint.coordinate, this.endPoint.coordinate],
+                    })
+                    .then(res => {
+                        console.log(res);
+                    });
+
                 console.log('end point', this.endPoint);
             } else if (this.startPoint !== null && this.endPoint !== null) {
                 if (this.startFlag) {
@@ -391,14 +400,13 @@ class App {
                     console.log('end point', this.endPoint);
                 }
                 this.startFlag = !this.startFlag;
-                //Calculate route
 
-                const auth = arcgisRest.ApiKeyManager.fromKey(apiKey);
+                // auth not working, prob smth wrong with dev profile
 
                 arcgisRest
                     .solveRoute({
                         stops: [this.startPoint.coordinate, this.endPoint.coordinate],
-                        auth,
+                        authentication,
                     })
                     .then(res => {
                         console.log(res);
