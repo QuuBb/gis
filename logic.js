@@ -8,17 +8,23 @@ import {Feature, Overlay} from 'ol';
 import {Point} from 'ol/geom';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
+import Circle from 'ol/geom/Circle.js';
+import Stroke from 'ol/style/Stroke';
+import Fill from 'ol/style/Fill';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import {fromLonLat} from 'ol/proj';
 import {add} from 'ol/coordinate';
 import {returnOrUpdate} from 'ol/extent';
 
+const apiKey = 'AAPK10d71740470841baaed42884615b1ee18aFFNVd1aKd1B0LoIAGYeNcz4kHplJ-pTki3jwJtXugj8JnUKnI3eDglN0aIV1ij';
+
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
 const btnCenter = document.getElementById('btnCenter');
 const btnNewPoint = document.getElementById('btnNewPoint');
 const btnSavePoint = document.getElementById('btnSavePoint');
+const btnRoute = document.getElementById('btnRoute');
 const popupSave = document.getElementById('popupSave');
 
 const defLat = 54.4;
@@ -28,6 +34,22 @@ class App {
     constructor() {
         useGeographic();
 
+        this.Init();
+
+        this.points = [];
+        this.pointRenders = [];
+        this.pointLayer;
+        this.startPoint;
+        this.endPoint;
+        this.startFlag = true;
+
+        this.LoadPoints();
+        this.RenderPoints();
+        this.SetButtonsListeners();
+        this.SetMapListeners();
+    }
+
+    Init() {
         this.view = new View({
             center: [defLong, defLat],
             zoom: 12,
@@ -42,14 +64,9 @@ class App {
             ],
             view: this.view,
         });
+    }
 
-        this.points = [];
-        this.pointRenders = [];
-        this.pointLayer;
-
-        this.LoadPoints();
-        this.RenderPoints();
-
+    SetButtonsListeners() {
         btnCenter.addEventListener('click', () => {
             this.CenterView();
         });
@@ -63,6 +80,12 @@ class App {
             this.SaveNewPoint();
         });
 
+        btnRoute.addEventListener('click', () => {
+            this.StartRoute();
+        });
+    }
+
+    SetMapListeners() {
         this.map.on('click', event => {
             const feature = this.map.forEachFeatureAtPixel(event.pixel, feature => {
                 return feature;
@@ -334,6 +357,54 @@ class App {
         localStorage.removeItem(pointKey);
         this.LoadPoints();
         this.RenderPoints();
+    }
+
+    StartRoute() {
+        this.startPoint = null;
+        this.endPoint = null;
+
+        console.log('starting route');
+
+        const old_element = document.getElementById('map');
+        const new_element = old_element.cloneNode(true);
+        old_element.parentNode.replaceChild(new_element, old_element);
+        new_element.firstElementChild.remove();
+
+        this.Init();
+        this.RenderPointToList();
+
+        this.map.on('click', e => {
+            e.preventDefault();
+            if (this.startPoint === null) {
+                this.startPoint = new Point(e.coordinate);
+                console.log('start point', this.startPoint);
+            } else if (this.endPoint === null) {
+                this.endPoint = new Point(e.coordinate);
+
+                console.log('end point', this.endPoint);
+            } else if (this.startPoint !== null && this.endPoint !== null) {
+                if (this.startFlag) {
+                    this.startPoint = new Point(e.coordinate);
+                    console.log('start point', this.startPoint);
+                } else {
+                    this.endPoint = new Point(e.coordinate);
+                    console.log('end point', this.endPoint);
+                }
+                this.startFlag = !this.startFlag;
+                //Calculate route
+
+                const auth = arcgisRest.ApiKeyManager.fromKey(apiKey);
+
+                arcgisRest
+                    .solveRoute({
+                        stops: [this.startPoint.coordinate, this.endPoint.coordinate],
+                        auth,
+                    })
+                    .then(res => {
+                        console.log(res);
+                    });
+            }
+        });
     }
 }
 

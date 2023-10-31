@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="./style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Using OpenLayers with Vite</title>
+  <script src="https://unpkg.com/@esri/arcgis-rest-request@4.0.0/dist/bundled/request.umd.js"></script>
+  <script src="https://unpkg.com/@esri/arcgis-rest-routing@4.0.0/dist/bundled/routing.umd.js"></script>
 </head>
 
 <body>
@@ -30,7 +32,7 @@
       <div class="w-full flex flex-col justify-around items-center h-1/6">
         <button id="btnCenter" class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyśrodkuj</buton>
           <button id="btnNewPoint" class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Dodaj punkt</button>
-          <button class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyznacz trasę </button>
+          <button id="btnRoute" class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyznacz trasę </button>
       </div>
     </div>
     <div id="map" class="w-full h-full"></div>
