@@ -17,9 +17,6 @@ import {fromLonLat} from 'ol/proj';
 import {add} from 'ol/coordinate';
 import {returnOrUpdate} from 'ol/extent';
 
-const apiKey = 'AAPK10d71740470841baaed42884615b1ee18aFFNVd1aKd1B0LoIAGYeNcz4kHplJ-pTki3jwJtXugj8JnUKnI3eDglN0aIV1ij';
-const authentication = arcgisRest.ApiKeyManager.fromKey(apiKey);
-
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
 const btnCenter = document.getElementById('btnCenter');
@@ -33,6 +30,9 @@ const defLong = 18.6;
 
 class App {
     constructor() {
+        this.apiKey = 'AAPK10d71740470841baaed42884615b1ee18aFFNVd1aKd1B0LoIAGYeNcz4kHplJ-pTki3jwJtXugj8JnUKnI3eDglN0aIV1ij';
+        this.authentication = arcgisRest.ApiKeyManager.fromKey(this.apiKey);
+
         useGeographic();
 
         this.Init();
@@ -382,13 +382,7 @@ class App {
             } else if (this.endPoint === null) {
                 this.endPoint = new Point(e.coordinate);
 
-                arcgisRest
-                    .solveRoute({
-                        stops: [this.startPoint.coordinate, this.endPoint.coordinate],
-                    })
-                    .then(res => {
-                        console.log(res);
-                    });
+                this.UpdateRoute();
 
                 console.log('end point', this.endPoint);
             } else if (this.startPoint !== null && this.endPoint !== null) {
@@ -401,18 +395,23 @@ class App {
                 }
                 this.startFlag = !this.startFlag;
 
-                // auth not working, prob smth wrong with dev profile
-
-                arcgisRest
-                    .solveRoute({
-                        stops: [this.startPoint.coordinate, this.endPoint.coordinate],
-                        authentication,
-                    })
-                    .then(res => {
-                        console.log(res);
-                    });
+                this.UpdateRoute();
             }
         });
+    }
+
+    UpdateRoute() {
+        arcgisRest
+            .solveRoute({
+                stops: [this.startPoint, this.endPoint],
+                authentication: this.authentication,
+            })
+            .catch(e => {
+                console.error(e);
+            })
+            .finally(res => {
+                console.log(res);
+            });
     }
 }
 
