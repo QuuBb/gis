@@ -3,7 +3,7 @@ import Map from 'ol/Map.js';
 import OSM from 'ol/source/OSM.js';
 import TileLayer from 'ol/layer/Tile.js';
 import View from 'ol/View.js';
-import {useGeographic} from 'ol/proj';
+import {transformExtent, useGeographic} from 'ol/proj';
 import {Feature, Overlay} from 'ol';
 import {Point} from 'ol/geom';
 import Style from 'ol/style/Style';
@@ -16,6 +16,9 @@ import VectorLayer from 'ol/layer/Vector';
 import {fromLonLat} from 'ol/proj';
 import {add} from 'ol/coordinate';
 import {returnOrUpdate} from 'ol/extent';
+import apply from 'ol-mapbox-style';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import {addCoordinateTransforms} from 'ol/proj';
 
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
@@ -361,6 +364,11 @@ class App {
     }
 
     StartRoute() {
+        const basemapId = 'arcgis/navigation';
+
+        const basemapURL = `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/${basemapId}?token=${this.apiKey}`;
+
+        apply(this.map, basemapURL);
         this.startPoint = null;
         this.endPoint = null;
 
