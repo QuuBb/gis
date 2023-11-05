@@ -33,6 +33,7 @@ const defLong = 18.6;
 
 class App {
     constructor() {
+        this.site = 'http://router.project-osrm.org/route/v1/foot';
         this.apiKey = 'AAPK10d71740470841baaed42884615b1ee18aFFNVd1aKd1B0LoIAGYeNcz4kHplJ-pTki3jwJtXugj8JnUKnI3eDglN0aIV1ij';
         this.authentication = arcgisRest.ApiKeyManager.fromKey(this.apiKey);
 
@@ -363,12 +364,11 @@ class App {
         this.RenderPoints();
     }
 
+    GenerateURL(startPoint, endPoint) {
+        return `${this.site}/${startPoint};${endPoint}?geometries=geojson&overview=false&steps=true`;
+    }
+
     StartRoute() {
-        const basemapId = 'arcgis/navigation';
-
-        const basemapURL = `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/${basemapId}?token=${this.apiKey}`;
-
-        apply(this.map, basemapURL);
         this.startPoint = null;
         this.endPoint = null;
 
@@ -408,18 +408,12 @@ class App {
         });
     }
 
-    UpdateRoute() {
-        arcgisRest
-            .solveRoute({
-                stops: [this.startPoint, this.endPoint],
-                authentication: this.authentication,
-            })
-            .catch(e => {
-                console.error(e);
-            })
-            .finally(res => {
-                console.log(res);
-            });
+    async UpdateRoute() {
+        const promise = await fetch(this.GenerateURL(this.startPoint.getCoordinates(), this.endPoint.getCoordinates()));
+        const data = await promise.json();
+        const route = data.routes;
+        console.log(route);
+        // create polyline from all steps in route
     }
 }
 
