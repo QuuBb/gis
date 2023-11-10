@@ -3,22 +3,16 @@ import Map from 'ol/Map.js';
 import OSM from 'ol/source/OSM.js';
 import TileLayer from 'ol/layer/Tile.js';
 import View from 'ol/View.js';
-import {transformExtent, useGeographic} from 'ol/proj';
+import {useGeographic} from 'ol/proj';
 import {Feature, Overlay} from 'ol';
-import {Point} from 'ol/geom';
+import {LineString, Point} from 'ol/geom';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
-import Circle from 'ol/geom/Circle.js';
 import Stroke from 'ol/style/Stroke';
-import Fill from 'ol/style/Fill';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
-import {fromLonLat} from 'ol/proj';
-import {add} from 'ol/coordinate';
-import {returnOrUpdate} from 'ol/extent';
-import apply from 'ol-mapbox-style';
-import GeoJSON from 'ol/format/GeoJSON.js';
-import {addCoordinateTransforms} from 'ol/proj';
+
+import {get} from 'ol/proj.js';
 
 const list = document.getElementsByTagName('ul')[0];
 const popupInfo = document.getElementById('popupInfo');
@@ -52,6 +46,8 @@ class App {
         this.RenderPoints();
         this.SetButtonsListeners();
         this.SetMapListeners();
+
+        this.state = 'markers';
     }
 
     Init() {
@@ -71,12 +67,43 @@ class App {
         });
     }
 
+    ChangeState(state) {
+        if (this.state === state) return;
+        this.state = state;
+        if (this.state === 'markers') {
+            this.ReloadMap();
+            this.LoadPoints();
+            this.RenderPoints();
+            this.SetMapListeners();
+            this.SetButtonsListeners();
+        }
+        if (this.state === 'route') {
+            this.ReloadMap();
+        }
+    }
+
+    ReloadMap() {
+        this.startPoint = null;
+        this.endPoint = null;
+
+        console.log('starting route');
+
+        const old_element = document.getElementById('map');
+        const new_element = old_element.cloneNode(true);
+        old_element.parentNode.replaceChild(new_element, old_element);
+        new_element.firstElementChild.remove();
+
+        this.Init();
+        this.RenderPointToList();
+    }
+
     SetButtonsListeners() {
         btnCenter.addEventListener('click', () => {
             this.CenterView();
         });
 
         btnNewPoint.addEventListener('click', () => {
+            this.ChangeState('markers');
             this.AddNewPoint();
         });
 
@@ -86,11 +113,13 @@ class App {
         });
 
         btnRoute.addEventListener('click', () => {
+            this.ChangeState('route');
             this.StartRoute();
         });
     }
 
     SetMapListeners() {
+        console.log('ebe');
         this.map.on('click', event => {
             const feature = this.map.forEachFeatureAtPixel(event.pixel, feature => {
                 return feature;
@@ -369,19 +398,6 @@ class App {
     }
 
     StartRoute() {
-        this.startPoint = null;
-        this.endPoint = null;
-
-        console.log('starting route');
-
-        const old_element = document.getElementById('map');
-        const new_element = old_element.cloneNode(true);
-        old_element.parentNode.replaceChild(new_element, old_element);
-        new_element.firstElementChild.remove();
-
-        this.Init();
-        this.RenderPointToList();
-
         this.map.on('click', e => {
             e.preventDefault();
             if (this.startPoint === null) {
@@ -409,11 +425,54 @@ class App {
     }
 
     async UpdateRoute() {
+        const layerAmount = this.map.getAllLayers().length;
+        console.log(this.map.getAllLayers(), layerAmount);
+        if (layerAmount > 1) {
+            this.map.removeLayer(this.map.getAllLayers()[layerAmount - 1]);
+        }
         const promise = await fetch(this.GenerateURL(this.startPoint.getCoordinates(), this.endPoint.getCoordinates()));
         const data = await promise.json();
-        const route = data.routes;
-        console.log(route);
+        const route = data.routes[0];
         // create polyline from all steps in route
+        const steps = route.legs[0].steps;
+        const coords = [];
+        steps.forEach(step => {
+            coords.push(...step.geometry.coordinates);
+        });
+
+        // Create a vector source
+        const source = new VectorSource();
+
+        // Function to create a line string feature from coordinates
+        const createLineStringFeature = function (coordinates) {
+            return new Feature(new LineString(coordinates));
+        };
+
+        // Add the route as a line string feature to the vector source
+        source.addFeature(createLineStringFeature(coords));
+
+        // Style for the route
+        const style = new Style({
+            stroke: new Stroke({
+                color: 'red',
+                width: 5,
+            }),
+        });
+
+        // Create a vector layer with the vector source and style
+        const vector = new VectorLayer({
+            source: source,
+            style: style,
+        });
+
+        // Add the vector layer to the map
+        this.map.addLayer(vector);
+
+        // Limit multi-world panning to one world east and west of the real world.
+        // Geometry coordinates have to be within that range.
+        const extent = get('EPSG:3857').getExtent().slice();
+        extent[0] += extent[0];
+        extent[2] += extent[2];
     }
 }
 
