@@ -86,8 +86,6 @@ class App {
         this.startPoint = null;
         this.endPoint = null;
 
-        console.log('starting route');
-
         const old_element = document.getElementById('map');
         const new_element = old_element.cloneNode(true);
         old_element.parentNode.replaceChild(new_element, old_element);
@@ -119,7 +117,6 @@ class App {
     }
 
     SetMapListeners() {
-        console.log('ebe');
         this.map.on('click', event => {
             const feature = this.map.forEachFeatureAtPixel(event.pixel, feature => {
                 return feature;
@@ -402,20 +399,15 @@ class App {
             e.preventDefault();
             if (this.startPoint === null) {
                 this.startPoint = new Point(e.coordinate);
-                console.log('start point', this.startPoint);
             } else if (this.endPoint === null) {
                 this.endPoint = new Point(e.coordinate);
 
                 this.UpdateRoute();
-
-                console.log('end point', this.endPoint);
             } else if (this.startPoint !== null && this.endPoint !== null) {
                 if (this.startFlag) {
                     this.startPoint = new Point(e.coordinate);
-                    console.log('start point', this.startPoint);
                 } else {
                     this.endPoint = new Point(e.coordinate);
-                    console.log('end point', this.endPoint);
                 }
                 this.startFlag = !this.startFlag;
 
@@ -426,7 +418,6 @@ class App {
 
     async UpdateRoute() {
         const layerAmount = this.map.getAllLayers().length;
-        console.log(this.map.getAllLayers(), layerAmount);
         if (layerAmount > 1) {
             this.map.removeLayer(this.map.getAllLayers()[layerAmount - 1]);
         }

@@ -13,9 +13,9 @@
 </head>
 
 <body>
-  <div class="main flex flex-row w-screen h-screen">
-    <div class="max-w-sm h-full bg-lime-900 p-0 flex flex-col">
-      <ul class="bg-gray-200 m-5 rounded-md flex flex-col h-5/6 overflow-scroll">
+  <div class="main flex flex-row w-screen h-screen md:flex-col-reverse">
+    <div class="max-w-sm h-full bg-lime-900 p-0 flex flex-col lg:w-1/3 md:w-screen md:max-w-none md:h-48">
+      <ul class="bg-gray-200 m-5 rounded-md flex flex-col h-5/6 overflow-scroll md:h-1/2">
         <!-- <li class="border-b-2 border-black 80 flex items-center cursor-pointer">
           <div class="w-full flex items-center p-1">
           <div class="w-8 h-8">
@@ -30,10 +30,17 @@
           </div>
       </li> -->
       </ul>
-      <div class="w-full flex flex-col justify-around items-center h-1/6">
-        <button id="btnCenter" class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyśrodkuj</buton>
-          <button id="btnNewPoint" class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Dodaj punkt</button>
-          <button id="btnRoute" class="bg-gray-200 w-48 h-12 text-xl rounded-xl">Wyznacz trasę </button>
+      <div class="w-full flex flex-col justify-around items-center h-1/6 md:h-1/3 md:flex-row">
+        <button id="btnCenter"
+          class="bg-gray-200 w-48 h-10 text-xl rounded-xl lg:w-36 lg:h-9 sm:w-24 sm:h-6 sm:text-sm">Wyśrodkuj
+          </buton>
+          <button id="btnNewPoint"
+            class="bg-gray-200 w-48 h-10 text-xl rounded-xl lg:w-36 lg:h-9 sm:w-24 sm:h-6 sm:text-sm">Dodaj
+            punkt</button>
+          <button id="btnRoute"
+            class="bg-gray-200 w-48 h-10 text-xl rounded-xl lg:w-36 lg:h-9 sm:w-24 sm:h-6 sm:text-sm">Wyznacz
+            trasę
+          </button>
       </div>
     </div>
     <div id="map" class="w-full h-full"></div>
@@ -44,9 +51,9 @@
 </html>
 
 <!-- Popup info -->
-<div id="popupInfo" class="bg-red-50 w-fit rounded-md max-w-md p-10 flex flex-col gap-3 hidden">
+<div id="popupInfo" class="bg-red-50 w-fit rounded-md max-w-md p-10 flex flex-col gap-3 hidden md:w-[75vw] md:p-2">
   <img src="/data/ebe.png" alt="" class="w-full">
-  <h4 class="text-3xl">Muzeum</h4>
+  <h4 class="text-3xl md:text-xl">Muzeum</h4>
   <div class="flex">
     <p>Adres:</p>
     <p class="ml-auto">Gdańsk 81-554, ul. Zwycięstwa 45</p>
