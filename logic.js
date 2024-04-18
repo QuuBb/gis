@@ -293,7 +293,7 @@ class App {
 
         overlay.setPosition([point.longitude, point.latitude]);
 
-        fetch(`https://geocode.maps.co/reverse?lat=${point.latitude}&lon=${point.longitude}`)
+        fetch(`https://geocode.maps.co/reverse?lat=${point.latitude}&lon=${point.longitude}&api_key=66211bd01661f438108894hso5c164e`)
             .then(response => response.json())
             .then(data => {
                 popupInfo.getElementsByTagName('img')[0].src = point.photo;
@@ -308,8 +308,8 @@ class App {
                     popupInfo.getElementsByTagName('p')[1].innerHTML = `ul. ${data.address.road}, ${data.address.city} ${data.address.postcode}`;
                 }
             });
-
         popupInfo.classList.remove('hidden');
+
     }
 
     CenterView() {
