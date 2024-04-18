@@ -167,14 +167,22 @@ class App {
         this.LoadSavedPoints();
     }
 
-    RenderPointsToMap() {
+    RenderPointsToMap(points = this.points) {
         this.map.removeLayer(this.map.getLayers().array_[1]);
         this.pointRenders = [];
-        this.points.forEach(point => {
+        points.forEach(point => {
             let pointRender = new Feature({
                 geometry: new Point([point.longitude, point.latitude]),
                 name: point.name,
             });
+
+            let imageSrc = "data/img1.png";
+
+            if(point.type == "1") imageSrc = 'data/img1.png'
+            if(point.type == "2") imageSrc = 'data/img2.png'
+            if(point.type == "3") imageSrc = 'data/img3.png'
+            if(point.type == "4") imageSrc = 'data/img4.png'
+            if(point.type == "5") imageSrc = 'data/img5.png'
 
             pointRender.setStyle(
                 new Style({
@@ -183,7 +191,7 @@ class App {
                         anchor: [0.5, 1],
                         anchorXUnits: 'fraction',
                         anchorYUnits: 'fraction',
-                        src: 'data/img.png',
+                        src: imageSrc,
                     }),
                 })
             );
@@ -396,6 +404,7 @@ class App {
 
     StartRoute() {
         this.map.on('click', e => {
+
             e.preventDefault();
             if (this.startPoint === null) {
                 this.startPoint = new Point(e.coordinate);
@@ -413,6 +422,8 @@ class App {
 
                 this.UpdateRoute();
             }
+
+            this.RenderPointsToMap([{name: "Start point", longitude: this.startPoint.getFlatCoordinates()[0], latitude: this.startPoint.getFlatCoordinates()[1], type: "4" }, {name: "End point", longitude: this.endPoint.getFlatCoordinates()[0], latitude: this.endPoint.getFlatCoordinates()[1], type: "5" }]);
         });
     }
 
