@@ -434,6 +434,28 @@ class App {
         });
     }
 
+    Translate(type, direction){
+        let ans = "";
+        if(direction === "uturn") return "Zawróć";
+        if(type === "depart") return "Początek trasy";
+        if(type === "turn") ans += "Skręć";
+        if(type === "end of road") ans += "Skręć";
+        if(type === "rotary") ans += "Na rondzie";
+        if(type === "continue") return "Jedź prosto";
+        if(direction === "straight") return "Jedź prosto";
+        if(type === "arrive"){
+            return "Jesteś u celu";
+        } else if (ans === ""){ans += "Skręć"}
+        if(direction === "right") ans += " w prawo";
+        if(direction === "left") ans += " w lewo";
+        if(direction === "slight right") ans += " lekko w prawo";
+        if(direction === "slight right") ans += " lekko w prawo";
+        if(direction === "sharp left") ans += " ostro w lewo";
+        if(direction === "sharp left") ans += " ostro w lewo";
+
+        return ans;
+    }
+
     async UpdateRoute() {
         const layerAmount = this.map.getAllLayers().length;
         if (layerAmount > 1) {
@@ -442,12 +464,18 @@ class App {
         const promise = await fetch(this.GenerateURL(this.startPoint.getCoordinates(), this.endPoint.getCoordinates()));
         const data = await promise.json();
         const route = data.routes[0];
+        const hints = [];
+        route.legs[0].steps.forEach(step=>{
+            hints.push(`${this.Translate(step.maneuver.type, step.maneuver.modifier)}`);
+        });        
         // create polyline from all steps in route
         const steps = route.legs[0].steps;
         const coords = [];
         steps.forEach(step => {
             coords.push(...step.geometry.coordinates);
         });
+
+        console.log(hints);
 
         // Create a vector source
         const source = new VectorSource();
