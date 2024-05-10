@@ -20,8 +20,9 @@ const btnCenter = document.getElementById('btnCenter');
 const btnNewPoint = document.getElementById('btnNewPoint');
 const btnSavePoint = document.getElementById('btnSavePoint');
 const btnRoute = document.getElementById('btnRoute');
+const btnLogin = document.getElementById('btnLogin');
+const popupLogin = document.getElementById('popupLogin');
 const popupSave = document.getElementById('popupSave');
-
 const defLat = 54.4;
 const defLong = 18.6;
 
@@ -114,6 +115,11 @@ class App {
             this.ChangeState('route');
             this.StartRoute();
         });
+
+        btnLogin.addEventListener('click', e => {
+            e.preventDefault();
+            this.OnLoginClick();
+        });
     }
 
     SetMapListeners() {
@@ -176,13 +182,13 @@ class App {
                 name: point.name,
             });
 
-            let imageSrc = "data/img1.png";
+            let imageSrc = 'data/img1.png';
 
-            if(point.type == "1") imageSrc = 'data/img1.png'
-            if(point.type == "2") imageSrc = 'data/img2.png'
-            if(point.type == "3") imageSrc = 'data/img3.png'
-            if(point.type == "4") imageSrc = 'data/img4.png'
-            if(point.type == "5") imageSrc = 'data/img5.png'
+            if (point.type == '1') imageSrc = 'data/img1.png';
+            if (point.type == '2') imageSrc = 'data/img2.png';
+            if (point.type == '3') imageSrc = 'data/img3.png';
+            if (point.type == '4') imageSrc = 'data/img4.png';
+            if (point.type == '5') imageSrc = 'data/img5.png';
 
             pointRender.setStyle(
                 new Style({
@@ -317,7 +323,6 @@ class App {
                 }
             });
         popupInfo.classList.remove('hidden');
-
     }
 
     CenterView() {
@@ -404,7 +409,6 @@ class App {
 
     StartRoute() {
         this.map.on('click', e => {
-
             e.preventDefault();
             if (this.startPoint === null) {
                 this.startPoint = new Point(e.coordinate);
@@ -423,7 +427,10 @@ class App {
                 this.UpdateRoute();
             }
 
-            this.RenderPointsToMap([{name: "Start point", longitude: this.startPoint.getFlatCoordinates()[0], latitude: this.startPoint.getFlatCoordinates()[1], type: "4" }, {name: "End point", longitude: this.endPoint.getFlatCoordinates()[0], latitude: this.endPoint.getFlatCoordinates()[1], type: "5" }]);
+            this.RenderPointsToMap([
+                {name: 'Start point', longitude: this.startPoint.getFlatCoordinates()[0], latitude: this.startPoint.getFlatCoordinates()[1], type: '4'},
+                {name: 'End point', longitude: this.endPoint.getFlatCoordinates()[0], latitude: this.endPoint.getFlatCoordinates()[1], type: '5'},
+            ]);
         });
     }
 
@@ -503,6 +510,10 @@ class App {
         const extent = get('EPSG:3857').getExtent().slice();
         extent[0] += extent[0];
         extent[2] += extent[2];
+    }
+
+    OnLoginClick() {
+        popupLogin.classList.toggle('hidden');
     }
 }
 
