@@ -22,9 +22,14 @@ const btnSavePoint = document.getElementById('btnSavePoint');
 const btnRoute = document.getElementById('btnRoute');
 const btnLogin = document.getElementById('btnLogin');
 const popupLogin = document.getElementById('popupLogin');
+const btnSignin = document.getElementById('btnSignin');
+const popupSignin = document.getElementById('popupSignin');
 const popupSave = document.getElementById('popupSave');
+const hintList = document.getElementById('hintList');
 const defLat = 54.4;
 const defLong = 18.6;
+let logged = false;
+let email;
 
 class App {
     constructor() {
@@ -43,10 +48,7 @@ class App {
         this.endPoint;
         this.startFlag = true;
 
-        this.LoadPoints();
         this.RenderPoints();
-        this.SetButtonsListeners();
-        this.SetMapListeners();
 
         this.state = 'markers';
     }
@@ -72,11 +74,9 @@ class App {
         if (this.state === state) return;
         this.state = state;
         if (this.state === 'markers') {
+            hintList.classList.add('hidden');
             this.ReloadMap();
             this.LoadPoints();
-            this.RenderPoints();
-            this.SetMapListeners();
-            this.SetButtonsListeners();
         }
         if (this.state === 'route') {
             this.ReloadMap();
@@ -93,12 +93,49 @@ class App {
         new_element.firstElementChild.remove();
 
         this.Init();
-        this.RenderPointToList();
+        this.RenderPoints();
     }
 
     SetButtonsListeners() {
         btnCenter.addEventListener('click', () => {
             this.CenterView();
+        });
+
+        popupLogin.addEventListener('keypress', async e => {
+            if (e.key == 'Enter') {
+                e.preventDefault();
+                let data = new FormData(popupLogin);
+                let response = await fetch('http://localhost:8080/login', {
+                    method: 'POST',
+                    body: data,
+                });
+                let result = await response.json();
+
+                alert(result.message);
+
+                if (result.status === '1') {
+                    btnLogin.classList.add('hidden');
+                    btnSignin.classList.add('hidden');
+                    popupLogin.classList.add('hidden');
+                    popupSignin.classList.add('hidden');
+
+                    email = data.get('email');
+                    logged = true;
+                    console.log(logged);
+                    this.ReloadMap();
+                }
+            }
+        });
+
+        popupSignin.addEventListener('keypress', async e => {
+            if (e.key == 'Enter') {
+                e.preventDefault();
+                let data = new FormData(popupSignin);
+                let response = await fetch('http://localhost:8080/signin', {
+                    method: 'POST',
+                    body: data,
+                });
+            }
         });
 
         btnNewPoint.addEventListener('click', () => {
@@ -119,6 +156,11 @@ class App {
         btnLogin.addEventListener('click', e => {
             e.preventDefault();
             this.OnLoginClick();
+        });
+
+        btnSignin.addEventListener('click', e => {
+            e.preventDefault();
+            this.OnSigninClick();
         });
     }
 
@@ -148,29 +190,44 @@ class App {
         });
     }
 
-    LoadDefaultPoints() {
-        const points = [...data.monuments];
+    async LoadDefaultPoints() {
+        this.points = [];
+        let response = await fetch('http://localhost:8080/monuments');
+        let result = await response.json();
+
+        const points = [...result];
+
         points.forEach(point => {
             point.default = true;
         });
         this.points.push(...points);
     }
 
-    LoadSavedPoints() {
-        if (localStorage.length == 0) return;
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            const point = JSON.parse(localStorage.getItem(localStorage.key(i)));
-            point.default = false;
-            point.key = key;
-            this.points.push(point);
+    async LoadSavedPoints() {
+        if (localStorage.length !== 0) {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const point = JSON.parse(localStorage.getItem(localStorage.key(i)));
+                point.default = false;
+                point.key = key;
+                this.points.push(point);
+            }
+        }
+
+        if (logged) {
+            let response = await fetch(`http://localhost:8080/customMonuments?userEmail=${email}`);
+            let result = await response.json();
+            result.forEach(point => {
+                point.default = false;
+                point.id = this.points.push(point);
+            });
         }
     }
 
-    LoadPoints() {
+    async LoadPoints() {
         this.points = [];
-        this.LoadDefaultPoints();
-        this.LoadSavedPoints();
+        await this.LoadDefaultPoints();
+        await this.LoadSavedPoints();
     }
 
     RenderPointsToMap(points = this.points) {
@@ -235,7 +292,7 @@ class App {
                 </div>
             </li>`;
             } else {
-                liHTML = `<li storage-key="${point.key}" class="border-b-2 border-black 80 flex items-center cursor-pointer">
+                liHTML = `<li storage-key="${point.key}" custom_monument_id="${point.custom_monument_id}" class="border-b-2 border-black 80 flex items-center cursor-pointer">
                 <div class="w-full flex items-center p-1">
                 <div class="w-8 h-8">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -267,15 +324,18 @@ class App {
             if (newLiEl.getElementsByTagName('button')[0] !== undefined) {
                 newLiEl.getElementsByTagName('button')[0].addEventListener('click', e => {
                     e.stopPropagation();
-                    this.DeleteCustomPoint(newLiEl.getAttribute('storage-key'));
+                    this.DeleteCustomPoint(newLiEl.getAttribute('storage-key'), newLiEl.getAttribute('custom_monument_id'));
                 });
             }
         });
     }
 
-    RenderPoints() {
+    async RenderPoints() {
+        await this.LoadPoints();
         this.RenderPointToList();
         this.RenderPointsToMap();
+        this.SetButtonsListeners();
+        this.SetMapListeners();
     }
 
     SetViewToPoint(point) {
@@ -390,17 +450,43 @@ class App {
                 default: false,
                 key: `point${localStorage.length}`,
             };
-            localStorage.setItem(`point${localStorage.length}`, JSON.stringify(newPoint));
             this.points.push(newPoint);
-            popupSave.classList.add('hidden');
-            this.RenderPoints();
+            if (logged) {
+                var data = {
+                    name: name,
+                    longitude: longitude,
+                    latitude: latitude,
+                    description: description,
+                    photo: photo,
+                    type: 4,
+                    email: email,
+                };
+                console.log(data);
+                fetch('http://localhost:8080/customMonuments', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                }).then(() => {
+                    popupSave.classList.add('hidden');
+                    this.RenderPoints();
+                });
+            } else {
+                localStorage.setItem(`point${localStorage.length}`, JSON.stringify(newPoint));
+                popupSave.classList.add('hidden');
+                this.RenderPoints();
+            }
         }
     }
 
-    DeleteCustomPoint(pointKey) {
-        localStorage.removeItem(pointKey);
-        this.LoadPoints();
-        this.RenderPoints();
+    DeleteCustomPoint(pointKey, custom_monument_id) {
+        if (logged) {
+            fetch(`http://localhost:8080/deleteCustomMonuments?custom_monument_id=${custom_monument_id}`, {method: 'GET'}).then(() => {
+                this.RenderPoints();
+            });
+        } else {
+            localStorage.removeItem(pointKey);
+            this.LoadPoints();
+            this.RenderPoints();
+        }
     }
 
     GenerateURL(startPoint, endPoint) {
@@ -434,24 +520,26 @@ class App {
         });
     }
 
-    Translate(type, direction){
-        let ans = "";
-        if(direction === "uturn") return "Zawróć";
-        if(type === "depart") return "Początek trasy";
-        if(type === "turn") ans += "Skręć";
-        if(type === "end of road") ans += "Skręć";
-        if(type === "rotary") ans += "Na rondzie";
-        if(type === "continue") return "Jedź prosto";
-        if(direction === "straight") return "Jedź prosto";
-        if(type === "arrive"){
-            return "Jesteś u celu";
-        } else if (ans === ""){ans += "Skręć"}
-        if(direction === "right") ans += " w prawo";
-        if(direction === "left") ans += " w lewo";
-        if(direction === "slight right") ans += " lekko w prawo";
-        if(direction === "slight right") ans += " lekko w prawo";
-        if(direction === "sharp left") ans += " ostro w lewo";
-        if(direction === "sharp left") ans += " ostro w lewo";
+    Translate(type, direction) {
+        let ans = '';
+        if (direction === 'uturn') return 'Zawróć';
+        if (type === 'depart') return 'Początek trasy';
+        if (type === 'turn') ans += 'Skręć';
+        if (type === 'end of road') ans += 'Skręć';
+        if (type === 'rotary') ans += 'Na rondzie';
+        if (type === 'continue') return 'Jedź prosto';
+        if (direction === 'straight') return 'Jedź prosto';
+        if (type === 'arrive') {
+            return 'Jesteś u celu';
+        } else if (ans === '') {
+            ans += 'Skręć';
+        }
+        if (direction === 'right') ans += ' w prawo';
+        if (direction === 'left') ans += ' w lewo';
+        if (direction === 'slight right') ans += ' lekko w prawo';
+        if (direction === 'slight right') ans += ' lekko w prawo';
+        if (direction === 'sharp left') ans += ' ostro w lewo';
+        if (direction === 'sharp left') ans += ' ostro w lewo';
 
         return ans;
     }
@@ -465,9 +553,9 @@ class App {
         const data = await promise.json();
         const route = data.routes[0];
         const hints = [];
-        route.legs[0].steps.forEach(step=>{
+        route.legs[0].steps.forEach(step => {
             hints.push(`${this.Translate(step.maneuver.type, step.maneuver.modifier)}`);
-        });        
+        });
         // create polyline from all steps in route
         const steps = route.legs[0].steps;
         const coords = [];
@@ -475,6 +563,12 @@ class App {
             coords.push(...step.geometry.coordinates);
         });
 
+        hintList.innerHTML = '';
+        hintList.classList.remove('hidden');
+
+        hints.forEach((hint, i) => {
+            hintList.insertAdjacentHTML('beforeend', `<p>${i}. ${hint}</p>`);
+        });
         console.log(hints);
 
         // Create a vector source
@@ -514,6 +608,9 @@ class App {
 
     OnLoginClick() {
         popupLogin.classList.toggle('hidden');
+    }
+    OnSigninClick() {
+        popupSignin.classList.toggle('hidden');
     }
 }
 

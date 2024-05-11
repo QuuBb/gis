@@ -45,13 +45,21 @@
     </div>
     <div id="map" class="w-full h-full"></div>
     <button class="bg-lime-500 rounded p-2 absolute right-0 top-0 mx-2 my-2" id="btnLogin">LOG IN</button>
-    <form id="popupLogin" action="login" method="post"
-      class="top-16 right-2 p-2 w-fit h-fit absolute bg-lime-500 hidden">
+    <button class="bg-lime-200 rounded p-2 absolute right-0 top-0 mx-20 my-2" id="btnSignin">SING IN</button>
+    <form id="popupSignin" method="post" class="top-16 right-2 p-2 w-fit h-fit absolute bg-lime-200 hidden">
       <label for="email" class="block text-center">Email</label>
       <input type="email" name="email" class="block" id="email">
       <label for="password" class="block text-center">Hasło</label>
       <input type="password" name="password" id="password" class="block">
     </form>
+    <form id="popupLogin" method="post" class="top-16 right-2 p-2 w-fit h-fit absolute bg-lime-500 hidden">
+      <label for="email" class="block text-center">Email</label>
+      <input type="email" name="email" class="block" id="email">
+      <label for="password" class="block text-center">Hasło</label>
+      <input type="password" name="password" id="password" class="block">
+    </form>
+    <div class="absolute bottom-0 right-0 w-48 hidden h-28 bg-scroll bg-white overflow-scroll" id="hintList">
+    </div>
   </div>
   <script type="module" src="./logic.js"></script>
 </body>
